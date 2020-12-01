@@ -1,10 +1,11 @@
 import itertools
+import math
 
 
 def find_ntuple_with_sum(data, n, x):
     for tpl in itertools.combinations(data, n):
         if sum(tpl) == x:
-            return eval('*'.join(str(i) for i in tpl))  # extremely cursed. i love it
+            return math.prod(tpl)
 
 
 def part_1(data):
