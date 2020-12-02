@@ -10,11 +10,11 @@ def idiot_shopkeeper(pwd):
 
 
 def part_1(data):
-    return len([None for pwd in data if validate(pwd)])
+    return sum(map(lambda x: validate(x), [pwd for pwd in data]))
 
 
 def part_2(data):
-    return len([None for pwd in data if idiot_shopkeeper(pwd)])
+    return sum(map(lambda x: idiot_shopkeeper(x), [pwd for pwd in data]))
 
 
 data = []
