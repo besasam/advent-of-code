@@ -1,21 +1,6 @@
 import re
 
 
-def prepare_file(file):
-    with open(file) as f:
-        rawdata = []
-        s = ''
-        for d in f.read().splitlines():
-            if d == '':
-                rawdata.append(s)
-                s = ''
-            else:
-                s += d + ' '
-        rawdata.append(s)
-
-    return [dict([tuple(l.split(':')) for l in d.split()]) for d in rawdata]
-
-
 def validate(passport):
     keys = ['byr', 'iyr', 'eyr', 'hgt', 'hcl', 'ecl', 'pid']
     return all(k in passport for k in keys)
@@ -62,5 +47,8 @@ def part_2(data):
     return sum(map(validate_keys, data))
 
 
-data = prepare_file('input.txt')
+with open('input.txt') as f:
+    data = [dict([tuple(l.split(':')) for l in d.split()]) for d in ' '.join([x if x != '' else '###' for x in f.read().splitlines()]).split(' ### ')]
+
+print(part_1(data))
 print(part_2(data))
