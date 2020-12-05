@@ -24,7 +24,7 @@ def validate_key(key, value):
             return 59 <= int(n) <= 76
         return False
     if key == 'hcl':
-        return value[0] == '#' and re.fullmatch(r'[a-f\d]{6}', value[1:]) is not None
+        return re.fullmatch(r'#[a-f\d]{6}', value) is not None
     if key == 'ecl':
         return value in ['amb', 'blu', 'brn', 'gry', 'grn', 'hzl', 'oth']
     if key == 'pid':
@@ -47,8 +47,13 @@ def part_2(data):
     return sum(map(validate_keys, data))
 
 
-with open('input.txt') as f:
+with open('input2.txt') as f:
     data = [dict([tuple(l.split(':')) for l in d.split()]) for d in ' '.join([x if x != '' else '###' for x in f.read().splitlines()]).split(' ### ')]
 
-print(part_1(data))
-print(part_2(data))
+# print(part_1(data))
+# print(part_2(data))
+
+ndata = [{key: value for key, value in sorted(d.items(), key=lambda item: item[1])} for d in data]
+
+for d in ndata:
+    print(d)
