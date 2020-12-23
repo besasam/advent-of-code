@@ -1,50 +1,30 @@
-# don't judge, it's a process
-
-def resolve_rules(rules):
+def resolve_rules(rules_dict):
     words = dict()
-    while len(words) < len(rules):
-        # print()
-        # print(f'Words: {words}')
-        # print(f'Rules: {rules}')
-        for rule in rules:
-            # print()
-            # print(f'Resolving rule {rule} ({rules[rule]})')
-            if rule in words:
-                # print('Already resolved')
-                continue
-            if all([type(word) is str for word in rules[rule]]):
-                # print('Already a string, adding to words')
+    rules = dict()
+    for rule in rules_dict:
+        rules[rule] = set(tuple(r) if type(r[0]) is not str else str(r[0]) for r in rules_dict[rule])
+    while rules:
+        for rule in list(rules.keys()):
+            if all(type(r) is str for r in rules[rule]):
                 words[rule] = rules[rule]
+                rules.pop(rule)
                 continue
-            for word in rules[rule]:
-                # print(f'Resolving subrule {word}')
-                if type(word) is list and all([type(var) is str for var in word]):
-                    # print('All variables resolved, making string')
-                    string = ''.join(word)
-                    if string not in rules[rule]:
-                        rules[rule].append(''.join(word))
-                    rules[rule].remove(word)
-                    continue
-                else:
-                    for i, w in enumerate(word):
-                        if type(w) is int and w in words:
-                            # print(f'Resolving variable {w}')
-                            if len(words[w]) == 1:
-                                # print('Directly resolved with one possibility')
-                                word[i] = words[w][0]
-                            else:
-                                # print('Resolving possibilities')
-                                # print(f'To remove: {word}')
-                                # print(f'Current rule: {rules[rule]}')
-                                for c in words[w]:
-                                    tmp = word[:]
-                                    tmp[i] = c
-                                    # print(f'One possibility: {tmp}')
-                                    rules[rule].append(tmp)
-                                # print(f'To remove: {word}')
-                                # print(f'Current rule: {rules[rule]}')
-                                if word in rules[rule]:
-                                    rules[rule].remove(word)
+            rule_copy = rules[rule].copy()
+            for subrule in rule_copy:
+                if type(subrule) is tuple:
+                    replaced = False
+                    if all(type(r) is str for r in subrule):
+                        rules[rule].add(joined := ''.join(subrule))
+                        rules[rule].remove(subrule)
+                        continue
+                    for i, var in enumerate(subrule):
+                        if var in words:
+                            replaced = True
+                            for res in words[var]:
+                                tmp = tuple(s if k != i else res for k, s in enumerate(subrule))
+                                rules[rule].add(tmp)
+                    if replaced:
+                        rules[rule].remove(subrule)
     return words
 
 
@@ -73,7 +53,7 @@ def part_1(rules, messages):
     return sum([m in rule_0 for m in messages])
 
 
-with open('input.txt') as f:
+with open('input2.txt') as f:
     data = f.read().splitlines()
     delim = data.index('')
     rules = parse_rules(data[:delim])
