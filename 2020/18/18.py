@@ -37,35 +37,6 @@ def parse_parentheses(expression):
         expression += c
 
 
-# def parenthesize(expression):
-#     exp = list(expression.replace(' ', ''))
-#     res = ''
-#     l = len(exp)
-#     op = '*'
-#     parentheses = 0
-#     i = 0
-#     while i < l - 1:
-#         if exp[i] in ['(', ')']:
-#             res += exp[i]
-#             op = '*'
-#             i += 1
-#             continue
-#         if exp[i+1] == '+' and op == '*':
-#             res += '('
-#             parentheses += 1
-#             op = '+'
-#         elif exp[i] == '*' and op == '+':
-#             res += ')'
-#             parentheses -= 1
-#             op = '*'
-#         res += exp[i]
-#         i += 1
-#     res += exp[-1]
-#     if parentheses > 0:
-#         res += ''.join([')' for _ in range(parentheses)])
-#     return res
-
-
 def parenthesize(expression):
     print()
     print(expression.replace(' ', ''))
@@ -151,14 +122,3 @@ def part_2(data):
 
 with open('example.txt') as f:
     data = f.read().splitlines()
-
-#print(part_2(data))
-
-# for d in data:
-#     print(d.replace(' ', ''))
-#     print(parenthesize(d))
-#     print()
-
-print(parenthesize(data[3]))
-
-#print(evaluate(parse(parenthesize(data[3]))))
