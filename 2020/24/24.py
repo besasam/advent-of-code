@@ -64,10 +64,9 @@ class HexTile:
             self.get_neighbors()
         active_neighbors = sum(n.active for n in self.neighbors)
         if self.active:
-            new_state = 1 <= active_neighbors <= 2
+            return 1 <= active_neighbors <= 2
         else:
-            new_state = active_neighbors == 2
-        return new_state
+            return active_neighbors == 2
 
     def __repr__(self):
         state = 'X' if self.active else ' '
