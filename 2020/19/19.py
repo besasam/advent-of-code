@@ -48,15 +48,40 @@ def parse_rules(rule_strings):
     return rules
 
 
+def validate(message: str, rules, c42: int = 0, c31: int = 0):
+    if message == '':
+        return c42 > c31 > 0
+    if c31 > 0 or not any([message.startswith(r42) for r42 in rules[42]]):
+        if c42 == 0:
+            return False
+        for r31 in rules[31]:
+            if message.startswith(r31):
+                nex = message.removeprefix(r31)
+                if validate(nex, rules, c42, c31+1):
+                    return True
+    if c31 == 0:
+        for r42 in rules[42]:
+            if message.startswith(r42):
+                nex = message.removeprefix(r42)
+                if validate(nex, rules, c42+1, c31):
+                    return True
+    return False
+
+
 def part_1(rules, messages):
     rule_0 = resolve_rules(rules)[0]
     return sum([m in rule_0 for m in messages])
 
 
-with open('input2.txt') as f:
+def part_2(rules, messages):
+    resolved_rules = resolve_rules(rules)
+    return sum([validate(m, resolved_rules) for m in messages])
+
+
+with open('input.txt') as f:
     data = f.read().splitlines()
     delim = data.index('')
     rules = parse_rules(data[:delim])
     messages = data[delim+1:]
 
-print(part_1(rules, messages))
+print(part_2(rules, messages))

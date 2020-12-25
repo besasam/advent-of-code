@@ -35,18 +35,6 @@ class PocketDimension:
             for y in cache[z]:
                 for x in cache[z][y]:
                     self.map[z][y][x].active = cache[z][y][x]
-        #self.prune()
-
-    def prune(self):
-        for z in list(self.map.keys()):
-            for y in list(self.map[z].keys()):
-                for x in list(self.map[z][y].keys()):
-                    if not self.map[z][y][x].active:
-                        self.map[z][y].pop(x)
-                if not self.map[z][y]:
-                    self.map[z].pop(y)
-            if not self.map[z]:
-                self.map.pop(z)
 
     def get_active_cubes(self):
         return sum([self.map[z][y][x].active for z in self.map for y in self.map[z] for x in self.map[z][y]])
