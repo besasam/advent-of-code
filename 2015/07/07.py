@@ -1,48 +1,81 @@
+from util.numbers import Int16Bit
+
+
 class Circuit:
-    INPUT = 0
-    NOT = 1
-    AND = 2
-    OR = 3
-    LSHIFT = 4
-    RSHIFT = 5
+    def __init__(self):
+        self.wires = dict()
 
-    def __init__(self, instructions):
-        self.i = [self.parse(i) for i in instructions]
-        self.gates = dict()
-
-    def parse(self, instruction):
-        gate, i = instruction[1], instruction[0].split()
-        p = {'gate': gate, 'op': None, 'params': None}
-        if len(i) == 1:
-            p['op'] = self.INPUT
-            p['params'] = i[0]
-        elif len(i) == 2:
-            p['op'] = self.NOT
-            p['params'] = i[1]
-        else:
-            op = i[1]
-            p['op'] = self.AND if op == 'AND' else self.OR if op == 'OR' else self.LSHIFT if op == 'LSHIFT' else self.RSHIFT
-            p['params'] = [i[0], i[2]]
-        return p
-
-    def run(self):
-        instructions = self.i[:]
+    def run(self, instructions: list):
+        self.wires = dict()
         while instructions:
-            for i in instructions[:]:
-                if i['op'] == self.INPUT and self.get(i['params']) is not None:
-                    self.gates.update({i['gate']: self.get(i['params'])})
-                    instructions.remove(i)
+            for i, ins in enumerate(instructions[:]):
+                if self.execute(ins):
+                    instructions.pop(i)
+                    break
+        return self.wires
 
-    def get(self, p):
-        if p.isdigit():
-            return int(p)
-        if p in self.gates:
-            return self.gates[p]
-        return None
+    def execute(self, instruction: list):
+        inp, out = instruction
+        inp = inp.split()
+        if len(inp) == 1:
+            w = inp[0]
+            if not w.isdigit():
+                if w not in self.wires:
+                    return False
+                else:
+                    res = self.wires[w]
+            else:
+                res = Int16Bit(w)
+        elif len(inp) == 2:
+            op, w = inp
+            if w not in self.wires:
+                return False
+            else:
+                res = ~ self.wires[w]
+        else:
+            w1, op, w2 = inp
+            if not w1.isdigit():
+                if w1 not in self.wires:
+                    return False
+                else:
+                    w1 = self.wires[w1]
+            if not w2.isdigit():
+                if w2 not in self.wires:
+                    return False
+                else:
+                    w2 = self.wires[w2]
+            if op == 'AND':
+                res = w1 & w2
+            elif op == 'OR':
+                res = w1 | w2
+            elif op == 'XOR':
+                res = w1 ^ w2
+            elif op == 'LSHIFT':
+                res = w1 << w2
+            elif op == 'RSHIFT':
+                res = w1 >> w2
+        self.wires[out] = res
+        return True
 
 
-with open('example.txt') as f:
-    # data = [[[x if not x.isdigit() else int(x) for x in k[0].split()], k[1]] for k in [l.split(' -> ') for l in f.read().splitlines()]]
+def part_1(data):
+    circuit = Circuit()
+    return circuit.run(data)['a']
+
+
+def part_2(data):
+    circuit = Circuit()
+    a = circuit.run(data[:])['a']
+    for d in data:
+        if d[1] == 'b':
+            d[0] = str(a)
+    return circuit.run(data)['a']
+
+
+with open('input.txt') as f:
     data = [l.split(' -> ') for l in f.read().splitlines()]
 
-circuit = Circuit(data)
+print(part_2(data))
+
+for d in data:
+    print(d)
