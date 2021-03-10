@@ -47,7 +47,8 @@ def part_2(ingredients: dict):
             recipe = {recipe_i[i]: recipe_q[i] for i in range(len(ingredients))}
             if cookie_cals(ingredients, recipe) != 500:
                 continue
-            if (score := cookie_score(ingredients, recipe)) > max_score:
+            score = cookie_score(ingredients, recipe)
+            if score > max_score:
                 max_score = score
     return max_score
 
