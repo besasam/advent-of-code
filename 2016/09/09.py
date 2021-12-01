@@ -1,5 +1,4 @@
 import re
-import math
 
 
 class Decompressor:
@@ -44,80 +43,25 @@ class Decompressor:
 
     def _parse_marker(self):
         end = self.marker.span()[1]
-        b = self.buffer[1:end-1].split('x')
+        b = self.buffer[1:end - 1].split('x')
         self.span = int(b[0])
         self.times = int(b[1])
         self.buffer = self.buffer[end:]
 
 
 class MetaDecompressor:
-    # def decompress(self, string):
-    #     self._initialize(string)
-    #     if self.start:
-    #         self.length += self.content.pop(0)
-    #     while self.content:
-    #         print(self.markers)
-    #         print(self.content)
-    #         print(self.length)
-    #         print()
-    #         if self.markers:
-    #             break
-    #         else:
-    #             self.length += self.content.pop()
-    #     # while self.content:
-    #     #     print(self.markers)
-    #     #     print(self.content)
-    #     #     print(self.length)
-    #     #     print()
-    #     #     if self.markers:
-    #     #         [span, times] = self.markers.pop()
-    #     #         self.length += (span * times) + (self.content.pop() - span)
-    #     #     else:
-    #     #         self.length += self.content.pop()
-    #     return self.length
-    #
-    # def _initialize(self, string):
-    #     self.length = 0
-    #     self.markers = [list(map(int, m[1:-1].split('x'))) for m in re.findall(r'\(\d+[x]\d+\)', string)]
-    #     self.content = [len(c) for c in re.split(r'\(\d+[x]\d+\)', string)]
-    #     self.start = string[0] != '('
-    #
-    # def _unpack(self):
-    #     return
-    #
-    # def _marker_length(self, i):
-    #     return sum([int(math.log10(m)) for m in self.markers[i]]) + 3
-    #
-    # def _markers_in_span(self):
-    #     count = 0
-    #     if len(self.markers) < 2:
-    #         return count
-    #     span = self.markers[0][0]
-    #     l = 0
-    #     for i in range(len(self.markers) - 1):
-    #         l += self.content[i] + self._marker_length(i+1)
-    #         if span < l:
-    #             return count
-    #         count += 1
-    #     return count
-    class Marker:
-        def __init__(self, m):
-            self.len = len(m)
-            [self.span, self.times] = list(map(int, m[1:-1].split('x')))
+    marker_regexp = r'\(\d+x\d+\)'
 
-    def decompress(self, string):
-        self._initialize(string)
-        return self._write()
-
-    def _initialize(self, string):
-        self.file = []
-        self.buffer = string
-
-    def _write(self):
-        m = re.search(r'\(\d+[x]\d+\)', self.buffer)
-        self.file.append(m.span()[0])
-        print(m.group())
-        return self.file
+    def get_decompressed_length(self, string: str):
+        if string == '':
+            return 0
+        marker_match = re.search(self.marker_regexp, string)
+        if marker_match is None:
+            return len(string)
+        head, tail, marker = string[:marker_match.start()], string[marker_match.end():], marker_match.group()
+        span, times = [int(c) for c in marker[1:-1].split('x')]
+        cur, nex = tail[:span], tail[span:]
+        return len(head) + times * self.get_decompressed_length(cur) + self.get_decompressed_length(nex)
 
 
 def part_1(data):
@@ -125,11 +69,12 @@ def part_1(data):
     return len(d.decompress(data))
 
 
-# with open('input.txt') as f:
-#    data = f.read()
+def part_2(data):
+    md = MetaDecompressor()
+    return md.get_decompressed_length(data)
 
-test = 'X(8x2)(3x3)ABCY'
-print(test)
-print()
-md = MetaDecompressor()
-print(md.decompress(test))
+
+with open('input.txt') as f:
+   data = f.read()
+
+print(part_2(data))
