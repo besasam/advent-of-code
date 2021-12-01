@@ -26,8 +26,8 @@ def cookie_cals(ingredients: dict, recipe: dict):
 def part_1(ingredients: dict):
     max_score = 0
     ingredient_order = list(itertools.permutations(ingredients.keys()))
-    for recipe_q in itertools.combinations([i for i in range(101)], len(ingredients)):
-        if sum(recipe_q) > 100:
+    for recipe_q in itertools.combinations_with_replacement([i for i in range(101)], len(ingredients)):
+        if sum(recipe_q) != 100:
             continue
         for recipe_i in ingredient_order:
             recipe = {recipe_i[i]: recipe_q[i] for i in range(len(ingredients))}
@@ -40,7 +40,7 @@ def part_1(ingredients: dict):
 def part_2(ingredients: dict):
     max_score = 0
     ingredient_order = list(itertools.permutations(ingredients.keys()))
-    for recipe_q in itertools.combinations([i for i in range(101)], len(ingredients)):
+    for recipe_q in itertools.combinations_with_replacement([i for i in range(101)], len(ingredients)):
         if sum(recipe_q) != 100:
             continue
         for recipe_i in ingredient_order:
@@ -56,4 +56,4 @@ def part_2(ingredients: dict):
 with open('input.txt') as f:
     ingredients = {s[0][:-1]: Ingredient(int(s[2][:-1]), int(s[4][:-1]), int(s[6][:-1]), int(s[8][:-1]), int(s[10])) for s in [line.split() for line in list(sorted(f.read().splitlines()))]}
 
-print(part_2(ingredients))
+print(part_1(ingredients))

@@ -37,7 +37,6 @@ def part_1(data: list):
 
 
 with open('input.txt') as f:
-    data = [int(x) for x in f.read().splitlines()]
-
+    data = list(reversed([int(x) for x in f.read().splitlines()]))
 
 print(part_1(data))

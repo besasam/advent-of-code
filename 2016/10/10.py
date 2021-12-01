@@ -1,159 +1,74 @@
-class Bot:
-    def __init__(self, id):
-        self.id = id
-        self.chips = []
-        self.cmd = {}
-
-    def set_command(self, low, high):
-        [self.cmd['low'], self.cmd['high']] = [low, high]
-
-    def give(self, chip):
-        self.chips.append(chip)
-
-    def run(self):
-        if not self.cmd or len(self.chips) < 2:
-            return
-        low = {'val': min(self.chips)}
-        low.update(self.cmd['low'])
-        high = {'val': max(self.chips)}
-        high.update(self.cmd['high'])
-        self.chips = []
-        return {
-            'bot': self.id,
-            'low': low,
-            'high': high
-        }
-
-    def __str__(self):
-        s = 'Bot ' + str(self.id)
-        if len(self.chips) > 0:
-            s += ' [' + str(self.chips[0])
-            if len(self.chips) > 1:
-                s += ', ' + str(self.chips[1])
-            s += ']'
-        return s
-
-
 class BotFactory:
-    def __init__(self, instructions):
-        self.i = [parse_instruction(i) for i in instructions]
+    def __init__(self, instructions: list[dict]):
         self.bots = {}
+        self.instructions = {}
         self.output = {}
-
-    def _execute(self, i):
-        id = i['bot']
-        bot = self._get(i['bot'])
-        if 'val' in i:
-            val = i['val']
-            holds = bot.chips
-            bot.give(i['val'])
-            print(f'Giving value {val} to bot {id} {holds}')
-        elif not bot.cmd:
-            lto = i['low']['to']
-            hto = i['high']['to']
-            ltype = i['low']['type']
-            htype = i['high']['type']
-            print(f'Setting command for bot {id}')
-            bot.set_command({'type': ltype, 'to': lto}, {'type': htype, 'to': hto})
-        return bot.run()
-
-    def _process(self, output):
-        id = output['bot']
-        l = output['low']['val']
-        h = output['high']['val']
-        print(f'Got values {l} and {h} from bot {id}')
-        for o in ['low', 'high']:
-            type = output[o]['type']
-            to = output[o]['to']
-            val = output[o]['val']
-            if type == 0:
-                print(f'Putting value {val} in output {to}')
-                self.output[to] = val
+        for i in instructions:
+            if 'value' in i.keys():
+                self.give_to_bot(i['bot'], i['value'])
             else:
-                e = self._execute({'bot': to, 'val': val})
-                if e:
-                    self._process(e)
+                self.instructions[i['bot']] = i['ins']
 
-    def _get(self, id):
+    def give_to_bot(self, id: int, value: int):
         if id not in self.bots:
-            self.bots[id] = Bot(id)
-        return self.bots[id]
+            self.bots[id] = []
+        self.bots[id].append(value)
 
-    def find_numbers(self, l, h):
-        k = 0
-        while True:
-            e = self._execute(self.i[k])
-            if e:
-                if e['low']['val'] == l and e['high']['val'] == h:
-                    return e['bot']
-                self._process(e)
-            if k < len(self.i) - 1:
-                k += 1
+    def step(self):
+        state = {bot: self.bots[bot][:] for bot in self.bots.keys()}
+        for bot in state:
+            if len(state[bot]) < 2:
+                continue
+            low, high = min(state[bot]), max(state[bot])
+            ins = self.instructions[bot]
+            low_target, high_target = ins['low'], ins['high']
+            if low_target[0] == 'bot':
+                self.give_to_bot(low_target[1], low)
             else:
-                k = 0
+                self.output[low_target[1]] = low
+            if high_target[0] == 'bot':
+                self.give_to_bot(high_target[1], high)
+            else:
+                self.output[high_target[1]] = high
+            self.bots[bot] = []
+
+    def search(self, val1: int, val2: int):
+        while True:
+            for bot in self.bots:
+                if val1 in self.bots[bot] and val2 in self.bots[bot]:
+                    return bot
+            self.step()
+
+    def get_output(self, id: int):
+        if id not in self.output.keys():
+            return None
+        return self.output[id]
 
 
-def parse_instruction(instruction):
-    l = instruction.split(' ')
-    if instruction[0] == 'v':
-        return {'bot': int(l[-1]), 'val': int(l[1])}
-    low = {'type': 1 if l[5] == 'bot' else 0, 'to': int(l[6])}
-    high = {'type': 1 if l[-2] == 'bot' else 0, 'to': int(l[-1])}
-    return {'bot': int(l[1]), 'low': low, 'high': high}
+def parse_instruction(instruction: str):
+    ins = instruction.split(' ')
+    if ins[0] == 'value':
+        return {'value': int(ins[1]), 'bot': int(ins[-1])}
+    bot, low_target, low, high_target, high = int(ins[1]), ins[5], int(ins[6]), ins[-2], int(ins[-1])
+    return {'bot': bot, 'ins': {'low': (low_target, low), 'high': (high_target, high)}}
 
 
-def trace_bot(id, instructions):
-    trace = set()
-    for i in instructions:
-        if 'val' not in i:
-            for o in ['low', 'high']:
-                if i[o]['type'] == 1:
-                    trace.add(i[o]['to'])
+def part_1(data):
+    bf = BotFactory(data)
+    return bf.search(61, 17)
 
 
-def trace_chip(val, instructions):
-    holder = None
-    trace = []
-    for i in instructions:
-        id = i['bot']
-        if 'val' in i and i['val'] == val:
-            holder = id
-            trace.append(id)
+def part_2(data):
+    bf = BotFactory(data)
+    while True:
+        o1, o2, o3 = bf.get_output(0), bf.get_output(1), bf.get_output(2)
+        if o1 is None or o2 is None or o3 is None:
+            bf.step()
         else:
-            for o in ['low', 'high']:
-                if i[o]['type'] == 1:
-                    trace.append(i[o]['to'])
-    return
-
-
-def trace_chips(vals, instructions):
-    [val1_holders, val1_candidates] = trace_chip(vals[0], instructions)
-    [val2_holders, val2_candidates] = trace_chip(vals[1], instructions)
-    return [val1_holders, val1_candidates, val2_holders, val2_candidates]
-
-
-def part_1(data, low, high):
-    b = BotFactory(data)
-    return b.find_numbers(low, high)
+            return o1*o2*o3
 
 
 with open('input.txt') as f:
-    data = f.read().splitlines()
+    data = [parse_instruction(line) for line in f.read().splitlines()]
 
-with open('example.txt') as f:
-    example = f.read().splitlines()
-
-instructions = [parse_instruction(e) for e in example]
-for i in instructions:
-    print(i)
-
-print()
-
-test = set()
-print(test)
-test.add(0)
-print(test)
-test.add(1)
-print(test)
-test.add(1)
-print(test)
+print(part_2(data))

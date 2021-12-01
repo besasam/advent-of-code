@@ -7,8 +7,8 @@ def get_number_of_presents(n: int):
 
 
 def get_new_number_of_presents(n: int):
-    ds = divisors(n)
-    return sum(11*d for d in ds if d*50 <= n)
+    ds = [x for x in divisors(n) if x*50 >= n]
+    return sum(11*d for d in ds)
 
 
 def part_1(n: int):
