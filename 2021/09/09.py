@@ -47,11 +47,11 @@ class Heightmap:
         return low_points
 
     def get_basin(self, p: Location):
-        basin = [p]
+        basin = {p}
         buffer = self.get_basin_neighbors(p)
         while buffer:
             buffer += [n for n in self.get_basin_neighbors(buffer[0]) if n not in buffer]
-            basin.append(buffer.pop(0))
+            basin.add(buffer.pop(0))
         return basin
 
     def get_neighbors(self, p):
@@ -67,13 +67,13 @@ class Heightmap:
         return neighbors
 
     def get_basin_neighbors(self, p: Location):
-        return [n for n in self.get_neighbors(p) if n.val < 9 and n.val == p.val+1]
+        return [n for n in self.get_neighbors(p) if 9 > n.val > p.val]
 
     def is_in_basin(self, p: Location):
         return any(p in basin for basin in self.basins)
 
     def __str__(self):
-        return '\n'.join(''.join('#' if self.is_in_basin(p) else '.' for p in row) for row in self.map)
+        return '\n'.join(''.join(str(p.val) if self.is_in_basin(p) else '.' for p in row) for row in self.map)
 
 
 def part_1(data):
