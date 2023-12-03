@@ -20,6 +20,12 @@ class Grid2D(MutableMapping):
             if not self.store[y]:
                 self.store.pop(y)
 
+    def width(self):
+        return len(self.store[0])
+
+    def height(self):
+        return len(self.store)
+
     def __getitem__(self, key: tuple):
         x, y = key
         try:
