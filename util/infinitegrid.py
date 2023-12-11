@@ -29,14 +29,9 @@ class Grid2D(MutableMapping):
     def __getitem__(self, key: tuple):
         x, y = key
         try:
-            el = self.store[y][x]
+            return self.store[y][x]
         except KeyError:
-            el = self.init_value
-            if y not in self.store:
-                self.store[y] = {x: el}
-            else:
-                self.store[y][x] = el
-        return el
+            return self.init_value
 
     def __setitem__(self, key: tuple, value):
         x, y = key
