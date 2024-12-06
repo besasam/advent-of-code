@@ -67,7 +67,6 @@ def part_2(data: list) -> int:
     possible_loops = 0
     visited_positions = grid.get_visited()
     for tile in visited_positions:
-        print(tile.x, tile.y)
         modified_grid = Grid(data)
         modified_grid.grid[tile.y][tile.x].obstacle = True
         while modified_grid.move():
